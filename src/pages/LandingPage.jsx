@@ -502,8 +502,8 @@ const LandingPage = () => {
                 <div className="flex items-center justify-between mb-3">
                   <span className="text-xs font-bold text-slate-700">Abril 2026</span>
                   <div className="flex gap-1">
-                    {['S','T','Q','Q','S','S','D'].map(d => (
-                      <span key={d} className="w-8 h-6 flex items-center justify-center text-[10px] font-semibold text-slate-400">{d}</span>
+                    {['S','T','Q','Q','S','S','D'].map((d, i) => (
+                      <span key={i} className="w-8 h-6 flex items-center justify-center text-[10px] font-semibold text-slate-400">{d}</span>
                     ))}
                   </div>
                 </div>
