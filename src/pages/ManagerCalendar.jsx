@@ -1,15 +1,17 @@
-import React, { useState, useEffect } from 'react';
-import { Calendar as CalendarIcon, Filter, Download, Info } from 'lucide-react';
+import React, { useState, useEffect, useRef } from 'react';
+import { Calendar as CalendarIcon, Filter, Download, Info, X, Check } from 'lucide-react';
 import GanttChart from '../components/ui/GanttChart';
 import { supabase } from '../lib/supabase';
 import { useLanguage } from '../lib/LanguageContext';
 import { getBusinessDays } from '../utils/dateUtils';
-import { format, parseISO, isAfter } from 'date-fns';
+import { format, parseISO } from 'date-fns';
 import { pt, enGB } from 'date-fns/locale';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
+import { useCompany } from '../lib/CompanyContext';
 
 const ManagerCalendar = () => {
   const { t, lang } = useLanguage();
+  const { company } = useCompany() || {};
   const m = (key, vars) => t('managerDashboard', key, vars);
   const dateLocale = lang === 'en' ? enGB : pt;
 
@@ -19,17 +21,32 @@ const ManagerCalendar = () => {
   const [nextLeave, setNextLeave]   = useState(null);
   const [loading, setLoading]       = useState(true);
   const [viewMode, setViewMode]     = useState('annual');
+  const [showFilters, setShowFilters] = useState(false);
+  const [deptFilter, setDeptFilter]   = useState(null);
+  const filterRef = useRef(null);
 
-  useEffect(() => { fetchData(); }, []);
+  useEffect(() => { if (company?.id) fetchData(); }, [company?.id]);
+
+  // Close filter dropdown on outside click
+  useEffect(() => {
+    const handler = (e) => {
+      if (filterRef.current && !filterRef.current.contains(e.target)) {
+        setShowFilters(false);
+      }
+    };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, []);
 
   const fetchData = async () => {
     setLoading(true);
     try {
-      // Approved requests with worker name
+      // Approved requests with worker name + department
       const { data: reqs } = await supabase
         .from('leave_requests')
-        .select('start_date, end_date, profiles!leave_requests_user_id_fkey(full_name)')
+        .select('start_date, end_date, profiles!inner(full_name, department, company_id)')
         .eq('status', 'approved')
+        .eq('profiles.company_id', company?.id || '')
         .order('start_date', { ascending: true });
 
       // Team size
@@ -40,10 +57,11 @@ const ManagerCalendar = () => {
 
       const today = new Date().toISOString().split('T')[0];
 
-      // Group by worker for Gantt
+      // Group by worker for Gantt (include department for filtering)
       const grouped = (reqs || []).reduce((acc, r) => {
         const name = r.profiles?.full_name || 'Utilizador';
-        if (!acc[name]) acc[name] = { name, avatar: name.charAt(0), requests: [] };
+        const dept = r.profiles?.department || null;
+        if (!acc[name]) acc[name] = { name, department: dept, avatar: name.charAt(0), requests: [] };
         acc[name].requests.push({ startDate: r.start_date, endDate: r.end_date });
         return acc;
       }, {});
@@ -73,7 +91,7 @@ const ManagerCalendar = () => {
 
   const handleExport = () => {
     const rows = [['Colaborador', 'Início', 'Fim', 'Dias Úteis']];
-    ganttData.forEach(worker =>
+    filteredGanttData.forEach(worker =>
       worker.requests.forEach(r =>
         rows.push([worker.name, r.startDate, r.endDate, getBusinessDays(r.startDate, r.endDate)])
       )
@@ -87,6 +105,12 @@ const ManagerCalendar = () => {
     a.click();
     URL.revokeObjectURL(url);
   };
+
+  // Derived filter data
+  const availableDepts = [...new Set(ganttData.map(w => w.department).filter(Boolean))].sort();
+  const filteredGanttData = deptFilter
+    ? ganttData.filter(w => w.department === deptFilter)
+    : ganttData;
 
   const availabilityRate = teamSize > 0
     ? Math.round((1 - offToday / teamSize) * 100)
@@ -108,10 +132,66 @@ const ManagerCalendar = () => {
           <h2 className="text-2xl font-bold text-text text-gradient">{m('globalLeaveMap')}</h2>
           <p className="text-sm text-text-muted">Visualização cronológica das ausências de toda a organização.</p>
         </div>
-        <div className="flex gap-2">
-          <button className="flex items-center gap-2 px-4 py-2 border border-border rounded-radius-sm text-sm font-semibold hover:bg-bg transition-colors cursor-pointer">
-            <Filter size={15} /> Filtros
+        <div className="flex gap-2 relative" ref={filterRef}>
+          <button
+            onClick={() => setShowFilters(v => !v)}
+            className={`flex items-center gap-2 px-4 py-2 border rounded-radius-sm text-sm font-semibold transition-colors cursor-pointer ${
+              deptFilter
+                ? 'bg-primary/10 border-primary/30 text-primary'
+                : 'border-border hover:bg-bg'
+            }`}
+          >
+            <Filter size={15} />
+            {deptFilter ? deptFilter : 'Filtros'}
+            {deptFilter && (
+              <span
+                onClick={(e) => { e.stopPropagation(); setDeptFilter(null); }}
+                className="ml-1 hover:opacity-70"
+              >
+                <X size={13} />
+              </span>
+            )}
           </button>
+
+          <AnimatePresence>
+            {showFilters && (
+              <motion.div
+                initial={{ opacity: 0, y: -6 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -6 }}
+                transition={{ duration: 0.15 }}
+                className="absolute top-full right-0 mt-2 w-56 bg-white border border-border rounded-radius shadow-lg z-50 overflow-hidden"
+              >
+                <div className="px-3 py-2 border-b border-border bg-bg">
+                  <span className="text-[10px] font-bold text-text-muted uppercase tracking-wider">
+                    Filtrar por Departamento
+                  </span>
+                </div>
+                <div className="py-1">
+                  <button
+                    onClick={() => { setDeptFilter(null); setShowFilters(false); }}
+                    className={`w-full flex items-center justify-between px-3 py-2 text-xs hover:bg-bg transition-colors ${!deptFilter ? 'font-bold text-primary' : 'text-text'}`}
+                  >
+                    Todos os departamentos
+                    {!deptFilter && <Check size={13} />}
+                  </button>
+                  {availableDepts.map(dept => (
+                    <button
+                      key={dept}
+                      onClick={() => { setDeptFilter(dept); setShowFilters(false); }}
+                      className={`w-full flex items-center justify-between px-3 py-2 text-xs hover:bg-bg transition-colors ${deptFilter === dept ? 'font-bold text-primary' : 'text-text'}`}
+                    >
+                      {dept}
+                      {deptFilter === dept && <Check size={13} />}
+                    </button>
+                  ))}
+                  {availableDepts.length === 0 && (
+                    <p className="px-3 py-3 text-xs text-text-muted">Sem departamentos disponíveis.</p>
+                  )}
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
           <button
             onClick={handleExport}
             className="flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-radius-sm text-sm font-semibold hover:bg-primary-light transition-colors cursor-pointer active:scale-95"
@@ -156,7 +236,7 @@ const ManagerCalendar = () => {
             A carregar mapa…
           </div>
         ) : (
-          <GanttChart data={ganttData} viewMode={viewMode} />
+          <GanttChart data={filteredGanttData} viewMode={viewMode} />
         )}
 
         <div className="mt-8 p-4 bg-slate-50 border border-border rounded-xl">

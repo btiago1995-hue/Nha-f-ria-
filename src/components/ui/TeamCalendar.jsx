@@ -22,8 +22,9 @@ import { ChevronLeft, ChevronRight, Users } from 'lucide-react';
  * Props:
  *  - teamAbsences: Array<{ date: string 'YYYY-MM-DD', name: string }>
  *  - holidays:     Array<{ date: string, name: string, scope: string }>
+ *  - myLeaves:     Array<string 'YYYY-MM-DD'>  — current user's approved leave days
  */
-const TeamCalendar = ({ teamAbsences = [], holidays = [] }) => {
+const TeamCalendar = ({ teamAbsences = [], holidays = [], myLeaves = [] }) => {
   const today = new Date();
   const [currentMonth, setCurrentMonth] = useState(new Date(today.getFullYear(), today.getMonth(), 1));
   const [tooltip, setTooltip] = useState(null);
@@ -40,6 +41,8 @@ const TeamCalendar = ({ teamAbsences = [], holidays = [] }) => {
   holidays.forEach(({ date, name, scope }) => {
     holidayMap[date] = { name, scope };
   });
+
+  const myLeavesSet = new Set(myLeaves);
 
   const handleDayEnter = (e, dateStr, absences, holiday) => {
     if (!absences.length && !holiday) return;
@@ -112,9 +115,10 @@ const TeamCalendar = ({ teamAbsences = [], holidays = [] }) => {
           const isCurrentMonth = isSameMonth(day, monthStart);
           const isToday = isSameDay(day, today);
           const isDayWeekend = isWeekend(day);
-          const absences = absenceMap[dateStr] || [];
-          const holiday = holidayMap[dateStr] || null;
+          const absences  = absenceMap[dateStr] || [];
+          const holiday   = holidayMap[dateStr] || null;
           const hasAbsence = absences.length > 0;
+          const isMyLeave  = myLeavesSet.has(dateStr);
 
           if (!isCurrentMonth) {
             return <div key={i} className="aspect-square" />;
@@ -129,6 +133,8 @@ const TeamCalendar = ({ teamAbsences = [], holidays = [] }) => {
                   ? 'bg-primary text-white font-bold'
                   : hasAbsence
                   ? 'bg-amber-100 text-amber-900 font-semibold'
+                  : isMyLeave
+                  ? 'bg-primary/10 text-primary font-semibold'
                   : holiday
                   ? 'bg-violet-50 text-violet-700 font-semibold'
                   : isDayWeekend
@@ -146,8 +152,13 @@ const TeamCalendar = ({ teamAbsences = [], holidays = [] }) => {
                 </span>
               )}
 
-              {/* Holiday dot (when no absence) */}
-              {!hasAbsence && holiday && !isToday && (
+              {/* My leave dot — underline indicator */}
+              {isMyLeave && !isToday && (
+                <span className="absolute bottom-0.5 left-1/2 -translate-x-1/2 w-3 h-0.5 bg-primary rounded-full" />
+              )}
+
+              {/* Holiday dot (when no absence and not my leave) */}
+              {!hasAbsence && !isMyLeave && holiday && !isToday && (
                 <span className="absolute bottom-0.5 left-1/2 -translate-x-1/2 w-1 h-1 bg-violet-400 rounded-full" />
               )}
             </div>
@@ -178,17 +189,21 @@ const TeamCalendar = ({ teamAbsences = [], holidays = [] }) => {
       {/* Legend */}
       <div className="flex flex-wrap gap-x-4 gap-y-2 mt-4 pt-3 border-t border-border">
         <LegendDot color="bg-primary" label="Hoje" />
+        <LegendDot color="bg-primary/40" label="As minhas férias" underline />
         <LegendDot color="bg-amber-300" label="Equipa ausente" />
         <LegendDot color="bg-violet-300" label="Feriado" />
-        <LegendDot color="bg-text-light" label="Fim de semana" />
       </div>
     </div>
   );
 };
 
-const LegendDot = ({ color, label }) => (
+const LegendDot = ({ color, label, underline }) => (
   <div className="flex items-center gap-1.5">
-    <span className={`w-2.5 h-2.5 rounded-sm flex-shrink-0 ${color}`} />
+    <span className={`w-2.5 h-2.5 rounded-sm flex-shrink-0 relative ${color}`}>
+      {underline && (
+        <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary rounded-full" />
+      )}
+    </span>
     <span className="text-xs text-text-muted">{label}</span>
   </div>
 );

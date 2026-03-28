@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import {
   Plane,
-  Calendar,
   AlertCircle,
   Info,
   CheckCircle2,
@@ -9,6 +8,7 @@ import {
   CalendarDays,
   Plus,
 } from 'lucide-react';
+import DateRangePicker from '../components/ui/DateRangePicker';
 import { useOutletContext, useLocation } from 'react-router-dom';
 import { useLanguage } from '../lib/LanguageContext';
 import { getBusinessDays } from '../utils/dateUtils';
@@ -67,6 +67,11 @@ const WorkerLeaves = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (formError || businessDays === 0) return;
+    const today = new Date().toISOString().split('T')[0];
+    if (formData.startDate < today) {
+      setFormError(w('pastDateError') || 'A data de início não pode ser no passado.');
+      return;
+    }
 
     setIsSubmitting(true);
     try {
@@ -233,32 +238,14 @@ const WorkerLeaves = () => {
               </select>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-              <div className="space-y-1.5">
-                <label className="text-xs font-bold text-text uppercase tracking-wider">{w('startDate')}</label>
-                <div className="relative">
-                  <Calendar className="absolute left-3 top-3 text-text-light w-4 h-4" />
-                  <input
-                    type="date"
-                    required
-                    className="w-full pl-10 pr-4 py-3 bg-bg border border-border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary-light/20 focus:border-primary-light transition-all"
-                    value={formData.startDate}
-                    onChange={(e) => setFormData({ ...formData, startDate: e.target.value })}
-                  />
-                </div>
-              </div>
-              <div className="space-y-1.5">
-                <label className="text-xs font-bold text-text uppercase tracking-wider">{w('endDate')}</label>
-                <div className="relative">
-                  <Calendar className="absolute left-3 top-3 text-text-light w-4 h-4" />
-                  <input
-                    type="date"
-                    required
-                    className="w-full pl-10 pr-4 py-3 bg-bg border border-border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary-light/20 focus:border-primary-light transition-all"
-                    value={formData.endDate}
-                    onChange={(e) => setFormData({ ...formData, endDate: e.target.value })}
-                  />
-                </div>
+            <div className="space-y-1.5">
+              <label className="text-xs font-bold text-text uppercase tracking-wider">{w('startDate')} → {w('endDate')}</label>
+              <div className="border border-border rounded-xl p-4 bg-bg/50">
+                <DateRangePicker
+                  start={formData.startDate}
+                  end={formData.endDate}
+                  onChange={(s, e) => setFormData({ ...formData, startDate: s, endDate: e })}
+                />
               </div>
             </div>
 

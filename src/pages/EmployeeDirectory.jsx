@@ -7,8 +7,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { format, parseISO } from 'date-fns';
 import { pt } from 'date-fns/locale';
 import { getBusinessDays } from '../utils/dateUtils';
-
-const DEPARTMENTS = ['Financeiro', 'Tecnologia', 'Marketing', 'Comercial', 'Produto', 'Operações', 'RH'];
+import { useCompany } from '../lib/CompanyContext';
 
 const ROLE_LABELS = { employee: 'Colaborador', manager: 'Gestor', admin: 'Administrador' };
 
@@ -29,7 +28,7 @@ const itemVariants = {
 };
 
 // ─── Edit Modal ──────────────────────────────────────────────────────────────
-const EditEmployeeModal = ({ worker, onClose, onSaved }) => {
+const EditEmployeeModal = ({ worker, departments, onClose, onSaved }) => {
   const [form, setForm]     = useState({
     full_name:        worker.name,
     department:       worker.department,
@@ -95,7 +94,7 @@ const EditEmployeeModal = ({ worker, onClose, onSaved }) => {
                 value={form.department}
                 onChange={e => setForm({ ...form, department: e.target.value })}
               >
-                {DEPARTMENTS.map(d => <option key={d}>{d}</option>)}
+                {(departments || []).map(d => <option key={d}>{d}</option>)}
               </select>
             </div>
             <div className="space-y-1.5">
@@ -232,6 +231,7 @@ const HistoryModal = ({ worker, onClose }) => {
 
 // ─── Main Page ────────────────────────────────────────────────────────────────
 const EmployeeDirectory = () => {
+  const { departments }               = useCompany() || {};
   const [isModalOpen,   setIsModalOpen]   = useState(false);
   const [searchTerm,    setSearchTerm]    = useState('');
   const [deptFilter,    setDeptFilter]    = useState('');
@@ -487,6 +487,7 @@ const EmployeeDirectory = () => {
         {editWorker && (
           <EditEmployeeModal
             worker={editWorker}
+            departments={departments}
             onClose={() => setEditWorker(null)}
             onSaved={fetchTeamData}
           />

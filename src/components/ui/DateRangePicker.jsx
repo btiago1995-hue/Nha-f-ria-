@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import {
   format, addMonths, subMonths,
   startOfMonth, endOfMonth,
@@ -8,9 +8,6 @@ import {
 } from 'date-fns';
 import { pt } from 'date-fns/locale';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
-
-const today = new Date();
-today.setHours(0, 0, 0, 0);
 
 const RANGE_BG = '#EEF2FF'; // light indigo for range highlight
 
@@ -22,6 +19,11 @@ const RANGE_BG = '#EEF2FF'; // light indigo for range highlight
  *   onChange – (start: string, end: string) => void
  */
 const DateRangePicker = ({ start, end, onChange }) => {
+  const today = useMemo(() => {
+    const d = new Date();
+    d.setHours(0, 0, 0, 0);
+    return d;
+  }, []);
   const initMonth = start
     ? new Date(start + 'T00:00:00')
     : new Date(today.getFullYear(), today.getMonth(), 1);

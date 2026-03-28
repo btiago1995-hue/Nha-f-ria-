@@ -1,9 +1,11 @@
 import React, { useState } from 'react';
 import { useOutletContext } from 'react-router-dom';
-import { Bell, Globe, Lock } from 'lucide-react';
-import { motion } from 'framer-motion';
+import { Bell, Globe, Lock, Building2, Check, Loader2, Pencil } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { supabase } from '../lib/supabase';
 import { useLanguage } from '../lib/LanguageContext';
+import { useCompany } from '../lib/CompanyContext';
+import { CV_SECTORS, getSectorLabel } from '../lib/sectors';
 
 const Toggle = ({ checked, onChange }) => (
   <button
@@ -21,8 +23,164 @@ const Toggle = ({ checked, onChange }) => (
   </button>
 );
 
+// ─── Organisation section (admin only) ───────────────────────────────────────
+const OrganisationSection = ({ profile }) => {
+  const { company, departments, refetch } = useCompany() || {};
+  const [editing, setEditing]   = useState(false);
+  const [name, setName]         = useState('');
+  const [sector, setSector]     = useState('');
+  const [saving, setSaving]     = useState(false);
+  const [saved, setSaved]       = useState(false);
+  const [error, setError]       = useState('');
+
+  const startEdit = () => {
+    setName(company?.name || '');
+    setSector(company?.sector || '');
+    setEditing(true);
+    setSaved(false);
+    setError('');
+  };
+
+  const handleSave = async (e) => {
+    e.preventDefault();
+    if (!profile.company_id) { setError('Empresa não associada ao perfil.'); return; }
+    if (!name.trim()) { setError('O nome da empresa não pode estar vazio.'); return; }
+    setSaving(true);
+    setError('');
+    const { error: err } = await supabase
+      .from('companies')
+      .update({ name: name.trim(), sector })
+      .eq('id', profile.company_id);
+    setSaving(false);
+    if (err) { setError('Erro ao guardar.'); return; }
+    await refetch();
+    setSaved(true);
+    setEditing(false);
+  };
+
+  const currentSector = CV_SECTORS.find(s => s.key === (company?.sector));
+
+  return (
+    <div className="bg-white rounded-radius border border-border shadow-sm overflow-hidden mb-4">
+      <div className="px-6 py-4 border-b border-border flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <Building2 size={15} className="text-text-muted" />
+          <span className="text-xs font-bold text-text-muted uppercase tracking-wider">Organização</span>
+        </div>
+        {!editing && (
+          <button
+            onClick={startEdit}
+            className="flex items-center gap-1.5 text-xs font-semibold text-primary hover:text-primary-light transition-colors"
+          >
+            <Pencil size={12} /> Editar
+          </button>
+        )}
+      </div>
+
+      <div className="p-6">
+        <AnimatePresence mode="wait">
+          {!editing ? (
+            <motion.div key="view" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+              <div className="flex items-start gap-4">
+                <div className="w-12 h-12 bg-primary/10 rounded-xl flex items-center justify-center text-2xl flex-shrink-0">
+                  {currentSector?.icon || '🏢'}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="text-base font-bold text-text">{company?.name || 'A Minha Empresa'}</div>
+                  <div className="text-sm text-primary font-semibold mt-0.5">
+                    {currentSector ? currentSector.label : <span className="text-amber-600">Setor não configurado</span>}
+                  </div>
+                  {departments && (
+                    <div className="flex flex-wrap gap-1.5 mt-3">
+                      {departments.map(d => (
+                        <span key={d} className="text-[11px] px-2.5 py-1 bg-primary/5 text-primary rounded-full font-semibold border border-primary/10">
+                          {d}
+                        </span>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </div>
+              {saved && (
+                <div className="flex items-center gap-2 text-sm text-emerald-700 font-semibold bg-emerald-50 border border-emerald-200 px-4 py-2.5 rounded-radius-sm mt-4">
+                  <Check size={14} /> Guardado com sucesso.
+                </div>
+              )}
+            </motion.div>
+          ) : (
+            <motion.form
+              key="edit"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onSubmit={handleSave}
+              className="space-y-5"
+            >
+              <div className="space-y-1.5">
+                <label className="text-xs font-bold text-text uppercase tracking-wider">Nome da Empresa</label>
+                <input
+                  type="text"
+                  className="w-full px-3 py-2.5 border border-border rounded-radius-sm text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
+                  value={name}
+                  onChange={e => setName(e.target.value)}
+                  placeholder="Ex: Hotel Morabeza"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-xs font-bold text-text uppercase tracking-wider">Setor de Atividade</label>
+                <div className="grid grid-cols-2 gap-2">
+                  {CV_SECTORS.map(s => (
+                    <button
+                      key={s.key}
+                      type="button"
+                      onClick={() => setSector(s.key)}
+                      className={`flex items-center gap-2.5 px-3 py-2.5 rounded-xl border-2 text-left transition-all ${
+                        sector === s.key
+                          ? 'border-primary bg-primary/5 text-primary'
+                          : 'border-border hover:border-primary/30 text-text'
+                      }`}
+                    >
+                      <span className="text-lg flex-shrink-0">{s.icon}</span>
+                      <span className="text-[12px] font-semibold leading-tight">{s.label}</span>
+                      {sector === s.key && <Check size={13} className="ml-auto flex-shrink-0" />}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {error && (
+                <p className="text-xs text-red-600 bg-red-50 border border-red-200 rounded-lg px-3 py-2">{error}</p>
+              )}
+
+              <div className="flex items-center gap-3 pt-1">
+                <button
+                  type="button"
+                  onClick={() => setEditing(false)}
+                  className="px-4 py-2 text-sm font-semibold text-text-muted hover:text-text transition-colors"
+                >
+                  Cancelar
+                </button>
+                <button
+                  type="submit"
+                  disabled={saving || !sector}
+                  className="flex items-center gap-2 px-5 py-2 bg-primary text-white text-sm font-bold rounded-radius-sm hover:bg-primary-light transition-all active:scale-95 disabled:opacity-50 shadow-sm"
+                >
+                  {saving ? <Loader2 size={14} className="animate-spin" /> : <Check size={14} />}
+                  {saving ? 'A guardar…' : 'Guardar'}
+                </button>
+              </div>
+            </motion.form>
+          )}
+        </AnimatePresence>
+      </div>
+    </div>
+  );
+};
+
+// ─── Main Settings Page ───────────────────────────────────────────────────────
 const SettingsPage = () => {
-  const { session } = useOutletContext();
+  const { session, profile } = useOutletContext();
   const { lang, switchLang, t } = useLanguage();
 
   const [notifPedidos,  setNotifPedidos]  = useState(() => localStorage.getItem('nha_feria_notif_pedidos')  !== 'false');
@@ -63,6 +221,9 @@ const SettingsPage = () => {
         <h2 className="text-2xl font-bold text-text text-gradient">{s('title')}</h2>
         <p className="text-sm text-text-muted mt-1">{s('subtitle')}</p>
       </div>
+
+      {/* Organisation — admin only */}
+      {profile?.role === 'admin' && <OrganisationSection profile={profile} />}
 
       {/* Notifications */}
       <div className="bg-white rounded-radius border border-border shadow-sm overflow-hidden mb-4">

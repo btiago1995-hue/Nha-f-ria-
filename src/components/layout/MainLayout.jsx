@@ -4,6 +4,8 @@ import Sidebar from './Sidebar';
 import TopBar from './TopBar';
 import { supabase } from '../../lib/supabase';
 import { motion, AnimatePresence } from 'framer-motion';
+import { CompanyProvider, useCompany } from '../../lib/CompanyContext';
+import CompanySetupModal from '../ui/CompanySetupModal';
 
 const MainLayout = () => {
   const [session, setSession] = useState(null);
@@ -95,7 +97,29 @@ const MainLayout = () => {
   }
 
   return (
+    <CompanyProvider profile={profile}>
+      <AppShell
+        profile={profile}
+        session={session}
+        sidebarOpen={sidebarOpen}
+        setSidebarOpen={setSidebarOpen}
+        getTitle={getTitle}
+        location={location}
+      />
+    </CompanyProvider>
+  );
+};
+
+// Inner component so it can access CompanyContext
+const AppShell = ({ profile, session, sidebarOpen, setSidebarOpen, getTitle, location }) => {
+  const { company, refetch } = useCompany();
+  const needsSetup = profile?.role === 'admin' && company !== null && !company?.sector;
+
+  return (
     <div className="min-h-screen bg-bg flex">
+      {needsSetup && (
+        <CompanySetupModal profile={profile} onComplete={refetch} />
+      )}
       {sidebarOpen && (
         <div
           className="fixed inset-0 bg-black/40 z-40 md:hidden"
