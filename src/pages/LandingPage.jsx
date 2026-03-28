@@ -293,7 +293,7 @@ const LandingPage = () => {
               Iniciar Sessão
             </button>
             <button
-              onClick={() => navigate('/login')}
+              onClick={() => navigate('/login?signup=true')}
               className="px-4 py-2 bg-primary text-white text-sm font-bold rounded-lg hover:bg-primary-light transition-colors cursor-pointer active:scale-95 shadow-sm"
             >
               Começar Grátis
@@ -331,7 +331,7 @@ const LandingPage = () => {
                 Iniciar Sessão
               </button>
               <button
-                onClick={() => navigate('/login')}
+                onClick={() => navigate('/login?signup=true')}
                 className="w-full py-2.5 bg-primary text-white text-sm font-bold rounded-lg hover:bg-primary-light transition-colors cursor-pointer active:scale-95"
               >
                 Começar Grátis
@@ -376,7 +376,7 @@ const LandingPage = () => {
             {/* CTAs */}
             <div className="flex flex-col sm:flex-row items-center justify-center gap-3 mb-12">
               <button
-                onClick={() => navigate('/login')}
+                onClick={() => navigate('/login?signup=true')}
                 className="w-full sm:w-auto flex items-center justify-center gap-2 px-7 py-3.5 bg-primary text-white text-sm font-bold rounded-lg hover:bg-primary-light transition-colors shadow-lg cursor-pointer active:scale-95"
               >
                 Começar Grátis — Sem Cartão
@@ -735,7 +735,7 @@ const LandingPage = () => {
                 </ul>
 
                 <button
-                  onClick={() => navigate('/login')}
+                  onClick={() => navigate('/login?signup=true')}
                   className={`w-full py-3 rounded-lg text-sm font-bold transition-all cursor-pointer active:scale-95 ${
                     p.highlight
                       ? 'bg-accent text-primary hover:bg-accent-hover shadow-md'
@@ -802,7 +802,7 @@ const LandingPage = () => {
           </p>
           <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
             <button
-              onClick={() => navigate('/login')}
+              onClick={() => navigate('/login?signup=true')}
               className="w-full sm:w-auto flex items-center justify-center gap-2 px-8 py-3.5 bg-accent text-primary text-sm font-bold rounded-lg hover:bg-accent-hover transition-colors shadow-lg cursor-pointer active:scale-95"
             >
               Começar Grátis Agora
