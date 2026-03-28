@@ -1,0 +1,10 @@
+node_modules
+dist
+.env
+.env.local
+.gstack/
+.claude/
+.agents/
+tmp-vite/
+prototype-ui/
+skills-lock.json
