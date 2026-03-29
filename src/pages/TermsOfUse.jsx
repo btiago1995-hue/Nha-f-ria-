@@ -134,7 +134,7 @@ const TermsOfUse = () => (
         <Section title="10. Lei aplicável">
           <p>
             Estes termos são regidos pela lei de Cabo Verde. Quaisquer litígios serão submetidos
-            à jurisdição exclusiva dos tribunais de Praia, Santiago, Cabo Verde.
+            à jurisdição exclusiva dos tribunais de Mindelo, São Vicente, Cabo Verde.
           </p>
         </Section>
 
@@ -142,7 +142,7 @@ const TermsOfUse = () => (
           <p>
             Para questões sobre estes termos, contacte-nos em{' '}
             <a href="mailto:legal@nhaferia.cv" className="text-blue-600 hover:underline">legal@nhaferia.cv</a>{' '}
-            ou escreva para: Servyx Labs, Praia, Santiago, Cabo Verde.
+            ou escreva para: Servyx Labs, Mindelo, São Vicente, Cabo Verde.
           </p>
         </Section>
 

@@ -101,7 +101,7 @@ const InviteModal = ({ isOpen, onClose, onAdd }) => {
     if (method === 'whatsapp') {
       window.open(`https://wa.me/?text=${encodeURIComponent(message)}`, '_blank');
     } else {
-      window.open(`mailto:?subject=Convite Nha Féria&body=${encodeURIComponent(message)}`);
+      window.location.href = `mailto:?subject=Convite%20Nha%20F%C3%A9ria&body=${encodeURIComponent(message)}`;
     }
     handleClose();
   };

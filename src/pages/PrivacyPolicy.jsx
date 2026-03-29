@@ -141,7 +141,7 @@ const PrivacyPolicy = () => (
           <p>
             Para qualquer questão sobre privacidade ou proteção de dados, contacte-nos em{' '}
             <a href="mailto:privacidade@nhaferia.cv" className="text-blue-600 hover:underline">privacidade@nhaferia.cv</a>{' '}
-            ou escreva para: Servyx Labs, Praia, Santiago, Cabo Verde.
+            ou escreva para: Servyx Labs, Mindelo, São Vicente, Cabo Verde.
           </p>
         </Section>
       </div>
