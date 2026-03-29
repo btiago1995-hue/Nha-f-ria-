@@ -2,7 +2,7 @@ import React from 'react';
 import { ClipboardList, AlertCircle, TrendingUp } from 'lucide-react';
 
 const VacationBalanceCard = ({ profile, pendingDays = 0, usedDays = 0 }) => {
-  const totalEntitlement = 22;
+  const totalEntitlement = profile?.vacation_balance ?? 22;
   const used = usedDays;
   const available = Math.max(0, totalEntitlement - used - pendingDays);
 

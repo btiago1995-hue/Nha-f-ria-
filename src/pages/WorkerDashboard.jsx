@@ -114,10 +114,14 @@ const WorkerDashboard = () => {
   const sumDays = (reqs) =>
     reqs.reduce((total, r) => total + getBusinessDays(r.start_date, r.end_date), 0);
 
+  const totalBalance = profile?.vacation_balance ?? 22;
+  const usedDays    = sumDays(requests.filter(r => r.status === 'approved'));
+  const pendingDays = sumDays(requests.filter(r => r.status === 'pending'));
+
   const stats = {
-    available: profile?.vacation_balance || 22,
-    used:    sumDays(requests.filter(r => r.status === 'approved')),
-    pending: sumDays(requests.filter(r => r.status === 'pending')),
+    available: Math.max(0, totalBalance - usedDays),
+    used:      usedDays,
+    pending:   pendingDays,
   };
 
   const firstName = profile?.full_name?.split(' ')[0] || '';
