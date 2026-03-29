@@ -127,6 +127,17 @@ serve(async (req) => {
         raw_response:        params,
       }).eq('id', payment.id);
 
+      // Fire-and-forget: emit eFatura invoice (best-effort, non-blocking)
+      const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
+      fetch(`${supabaseUrl}/functions/v1/efatura-emit`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')}`,
+        },
+        body: JSON.stringify({ paymentId: payment.id }),
+      }).catch((err) => console.error('efatura-emit trigger failed (non-critical):', err));
+
       return redirect(`${APP_URL}/payment/result?status=success&plan=${payment.plan}`);
     } else {
       const errDesc = params.merchantRespErrorDescription ?? params.messageType ?? 'Payment declined';
