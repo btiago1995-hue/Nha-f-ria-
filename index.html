@@ -40,18 +40,39 @@
           "@type": "Organization",
           "@id": "https://nhaferia.cv/#organization",
           "name": "Nha Féria",
+          "legalName": "Servyx Labs, Lda.",
           "url": "https://nhaferia.cv",
           "logo": "https://nhaferia.cv/favicon.svg",
           "description": "Plataforma de gestão de férias e licenças para empresas em Cabo Verde.",
+          "address": {
+            "@type": "PostalAddress",
+            "streetAddress": "Villa Nova, Rua 2 Lote 10",
+            "addressLocality": "São Vicente",
+            "addressCountry": "CV"
+          },
+          "telephone": "+2385856003",
+          "email": "suporte@nhaferia.cv",
           "areaServed": {
             "@type": "Country",
-            "name": "Cabo Verde"
+            "name": "Cabo Verde",
+            "@id": "https://www.wikidata.org/wiki/Q1011",
+            "sameAs": "https://en.wikipedia.org/wiki/Cape_Verde"
           },
-          "contactPoint": {
-            "@type": "ContactPoint",
-            "contactType": "customer support",
-            "email": "suporte@nhaferia.cv"
-          }
+          "contactPoint": [
+            {
+              "@type": "ContactPoint",
+              "contactType": "customer support",
+              "telephone": "+2385856003",
+              "email": "suporte@nhaferia.cv",
+              "availableLanguage": ["Portuguese"]
+            },
+            {
+              "@type": "ContactPoint",
+              "contactType": "sales",
+              "email": "vendas@nhaferia.cv",
+              "availableLanguage": ["Portuguese"]
+            }
+          ]
         },
         {
           "@type": "SoftwareApplication",

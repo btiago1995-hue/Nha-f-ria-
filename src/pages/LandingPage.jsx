@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import {
   CalendarDays, Users, Bell, CheckCircle2, ArrowRight,
   FileText, Shield, Zap, ChevronDown, Menu, X,
-  Clock, TrendingUp, Award, MessageSquare,
+  Clock, TrendingUp, Award, MessageSquare, MapPin, Phone, Mail,
 } from 'lucide-react';
 
 // ─── Logo SVG ─────────────────────────────────────────────────────────────────
@@ -890,12 +890,29 @@ const LandingPage = () => {
                 { label: 'FAQ',             href: '#faq'              },
                 { label: 'Privacidade',     href: '/privacy'          },
                 { label: 'Termos',          href: '/terms'            },
+                { label: 'Contacto',        href: '/contacto'         },
               ].map(l => (
                 <a key={l.label} href={l.href} className="hover:text-white/70 transition-colors py-0.5">
                   {l.label}
                 </a>
               ))}
             </div>
+
+            {/* NAP */}
+            <address className="not-italic text-xs space-y-2">
+              <div className="flex items-start gap-2">
+                <MapPin size={12} className="mt-0.5 flex-shrink-0 text-accent/60" />
+                <span>Villa Nova, Rua 2 Lote 10<br />São Vicente, Cabo Verde</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <Phone size={12} className="flex-shrink-0 text-accent/60" />
+                <a href="tel:+2385856003" className="hover:text-white/70 transition-colors">+238 585 6003</a>
+              </div>
+              <div className="flex items-center gap-2">
+                <Mail size={12} className="flex-shrink-0 text-accent/60" />
+                <a href="mailto:suporte@nhaferia.cv" className="hover:text-white/70 transition-colors">suporte@nhaferia.cv</a>
+              </div>
+            </address>
           </div>
 
           <div className="pt-6 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs">

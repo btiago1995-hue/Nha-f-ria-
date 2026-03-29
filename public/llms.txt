@@ -20,6 +20,11 @@ A plataforma respeita o Código Laboral de Cabo Verde (Lei n.º 41/VIII/2013), i
 
 ## Empresa
 
+- Nome legal: Servyx Labs, Lda.
 - Website: https://nhaferia.cv
+- Morada: Villa Nova, Rua 2 Lote 10, São Vicente, Cabo Verde
+- Telefone: +238 585 6003
 - Suporte: suporte@nhaferia.cv
+- Vendas: vendas@nhaferia.cv
+- Contacto: https://nhaferia.cv/contacto
 - País: Cabo Verde

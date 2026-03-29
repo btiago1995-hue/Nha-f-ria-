@@ -16,6 +16,7 @@ import PaymentResult from './pages/PaymentResult';
 import MainLayout from './components/layout/MainLayout';
 import PrivacyPolicy from './pages/PrivacyPolicy';
 import TermsOfUse from './pages/TermsOfUse';
+import ContactPage from './pages/ContactPage';
 
 function App() {
   return (
@@ -26,6 +27,7 @@ function App() {
         <Route path="/invite/:token" element={<InvitePage />} />
         <Route path="/privacy" element={<PrivacyPolicy />} />
         <Route path="/terms" element={<TermsOfUse />} />
+        <Route path="/contacto" element={<ContactPage />} />
         <Route path="/payment/result" element={<PaymentResult />} />
 
         {/* Protected Routes */}
