@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Building2, Check, ArrowRight, Loader2 } from 'lucide-react';
+import { Building2, Check, ArrowRight, Loader2, Hash } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 import { CV_SECTORS } from '../../lib/sectors';
 
@@ -8,6 +8,7 @@ const CompanySetupModal = ({ profile, onComplete }) => {
   const [step, setStep]         = useState('sector'); // 'sector' | 'name'
   const [sector, setSector]     = useState(null);
   const [name, setName]         = useState('');
+  const [nif, setNif]           = useState('');
   const [saving, setSaving]     = useState(false);
   const [error, setError]       = useState('');
 
@@ -19,7 +20,7 @@ const CompanySetupModal = ({ profile, onComplete }) => {
     try {
       const { error: err } = await supabase
         .from('companies')
-        .update({ name: name.trim() || 'A Minha Empresa', sector })
+        .update({ name: name.trim() || 'A Minha Empresa', sector, nif: nif.trim() || null })
         .eq('id', profile.company_id);
       if (err) throw err;
       onComplete();
@@ -166,6 +167,21 @@ const CompanySetupModal = ({ profile, onComplete }) => {
                       onChange={e => setName(e.target.value)}
                     />
                     <p className="text-[11px] text-text-muted">Podes alterar isto mais tarde nas Definições.</p>
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-bold text-text uppercase tracking-wider flex items-center gap-1.5">
+                      <Hash size={13} /> NIF da Empresa
+                      <span className="font-normal text-[10px] text-text-light normal-case tracking-normal">(necessário para faturação eletrónica)</span>
+                    </label>
+                    <input
+                      type="text"
+                      inputMode="numeric"
+                      placeholder="Ex: 200123456"
+                      className="w-full px-4 py-3 border border-border rounded-xl text-sm font-mono focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
+                      value={nif}
+                      onChange={e => setNif(e.target.value)}
+                    />
                   </div>
 
                   {error && (

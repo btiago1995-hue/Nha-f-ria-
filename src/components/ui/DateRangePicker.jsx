@@ -14,11 +14,13 @@ const RANGE_BG = '#EEF2FF'; // light indigo for range highlight
 /**
  * Airbnb-style inline date range picker.
  * Props:
- *   start    – string 'YYYY-MM-DD' or ''
- *   end      – string 'YYYY-MM-DD' or ''
- *   onChange – (start: string, end: string) => void
+ *   start            – string 'YYYY-MM-DD' or ''
+ *   end              – string 'YYYY-MM-DD' or ''
+ *   onChange         – (start: string, end: string) => void
+ *   holidays         – string[] of 'YYYY-MM-DD' public holiday dates
+ *   existingRequests – { start_date, end_date, status }[] already submitted by this user
  */
-const DateRangePicker = ({ start, end, onChange }) => {
+const DateRangePicker = ({ start, end, onChange, holidays = [], existingRequests = [] }) => {
   const today = useMemo(() => {
     const d = new Date();
     d.setHours(0, 0, 0, 0);
@@ -85,7 +87,18 @@ const DateRangePicker = ({ start, end, onChange }) => {
       cellBg = RANGE_BG;
     }
 
-    return { str, isPast, isStart, isEnd, isToday, inRange, inHover, isWeekd, inCurMonth, cellBg };
+    const isHoliday = holidays.includes(str);
+
+    let existingStatus = null;
+    for (const req of existingRequests) {
+      if (req.status !== 'cancelled' && req.status !== 'rejected'
+          && str >= req.start_date && str <= req.end_date) {
+        existingStatus = req.status;
+        break;
+      }
+    }
+
+    return { str, isPast, isStart, isEnd, isToday, inRange, inHover, isWeekd, inCurMonth, cellBg, isHoliday, existingStatus };
   };
 
   const DAY_LABELS = ['Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb', 'Dom'];
@@ -125,7 +138,7 @@ const DateRangePicker = ({ start, end, onChange }) => {
       {/* Calendar grid — h-11 cells (44px) for comfortable mobile tapping */}
       <div className="grid grid-cols-7" onMouseLeave={() => setHoverDate(null)}>
         {calDays.map((day, i) => {
-          const { str, isPast, isStart, isEnd, isToday, inRange, inHover, isWeekd, inCurMonth, cellBg } = getDayProps(day);
+          const { str, isPast, isStart, isEnd, isToday, inRange, inHover, isWeekd, inCurMonth, cellBg, isHoliday, existingStatus } = getDayProps(day);
 
           if (!inCurMonth) return <div key={i} className="h-11" />;
 
@@ -156,15 +169,28 @@ const DateRangePicker = ({ start, end, onChange }) => {
                     ? 'text-text hover:bg-white/60'
                     : isToday
                     ? 'font-bold text-primary hover:bg-bg'
+                    : isHoliday
+                    ? 'text-orange-500 hover:bg-bg'
                     : isWeekd
                     ? 'text-text-muted hover:bg-bg'
                     : 'text-text hover:bg-bg',
                 ].join(' ')}
               >
                 {format(day, 'd')}
-                {/* Today dot */}
-                {isToday && !isSelected && (
+                {/* Today dot (blue) */}
+                {isToday && !isSelected && !isHoliday && (
                   <span className="absolute bottom-1 left-1/2 -translate-x-1/2 w-1 h-1 bg-primary rounded-full" />
+                )}
+                {/* Holiday dot (orange) */}
+                {isHoliday && !isSelected && (
+                  <span className="absolute bottom-1 left-1/2 -translate-x-1/2 w-1 h-1 bg-orange-400 rounded-full" />
+                )}
+                {/* Existing request dot (top-right corner) */}
+                {existingStatus && !isSelected && (
+                  <span className={[
+                    'absolute top-0.5 right-0.5 w-1.5 h-1.5 rounded-full',
+                    existingStatus === 'approved' ? 'bg-emerald-400' : 'bg-amber-400',
+                  ].join(' ')} />
                 )}
               </button>
             </div>

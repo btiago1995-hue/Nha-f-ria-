@@ -44,7 +44,7 @@ const ManagerCalendar = () => {
       // Approved requests with worker name + department
       const { data: reqs } = await supabase
         .from('leave_requests')
-        .select('start_date, end_date, profiles!inner(full_name, department, company_id)')
+        .select('start_date, end_date, profiles!leave_requests_user_id_fkey(full_name, department, company_id)')
         .eq('status', 'approved')
         .eq('profiles.company_id', company?.id || '')
         .order('start_date', { ascending: true });

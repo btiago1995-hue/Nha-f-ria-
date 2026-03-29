@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
-import { CheckCircle2, AlertCircle, Eye, EyeOff } from 'lucide-react';
+import { CheckCircle2, AlertCircle, Eye, EyeOff, Hash } from 'lucide-react';
 
 const InvitePage = () => {
   const { token } = useParams();
@@ -12,7 +12,7 @@ const InvitePage = () => {
   const [showPass, setShowPass]   = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [errorMsg, setErrorMsg]   = useState('');
-  const [formData, setFormData]   = useState({ email: '', password: '', confirm: '' });
+  const [formData, setFormData]   = useState({ email: '', password: '', confirm: '', nif: '' });
 
   // ── Fetch invite by token ──
   useEffect(() => {
@@ -72,6 +72,7 @@ const InvitePage = () => {
           department:       invite.department,
           vacation_balance: invite.vacation_balance,
           company_id:       invite.company_id,
+          nif:              formData.nif.trim() || null,
         }).eq('id', userId);
 
         // 3. Mark invite as used
@@ -210,6 +211,22 @@ const InvitePage = () => {
               className="w-full px-4 py-3 border border-border rounded-radius-sm text-sm focus:outline-none focus:ring-2 focus:ring-primary-light/20 focus:border-primary-light transition-colors"
               value={formData.email}
               onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+            />
+          </div>
+
+          <div className="space-y-1.5">
+            <label className="text-xs font-bold text-text uppercase tracking-wider flex items-center gap-1.5">
+              <Hash size={12} /> NIF Pessoal
+              <span className="font-normal text-[10px] text-text-muted normal-case tracking-normal">(necessário para a folha de salários)</span>
+            </label>
+            <input
+              type="text"
+              inputMode="numeric"
+              autoComplete="off"
+              placeholder="Ex: 200123456"
+              className="w-full px-4 py-3 border border-border rounded-radius-sm text-sm font-mono focus:outline-none focus:ring-2 focus:ring-primary-light/20 focus:border-primary-light transition-colors"
+              value={formData.nif}
+              onChange={(e) => setFormData({ ...formData, nif: e.target.value })}
             />
           </div>
 

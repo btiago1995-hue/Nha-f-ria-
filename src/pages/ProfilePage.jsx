@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useOutletContext } from 'react-router-dom';
-import { User, Mail, Building2, Calendar, Sun, Smile, Pencil, MapPin, Check, Loader2 } from 'lucide-react';
+import { User, Mail, Building2, Calendar, Sun, Smile, Pencil, MapPin, Check, Loader2, Hash } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useLanguage } from '../lib/LanguageContext';
 import { supabase } from '../lib/supabase';
@@ -29,6 +29,26 @@ const ProfilePage = () => {
   const { profile } = useOutletContext();
   const { t, lang } = useLanguage();
   const p = (key) => t('profile', key);
+
+  const [nif, setNif]                   = useState(profile?.nif || '');
+  const [nifEditing, setNifEditing]     = useState(false);
+  const [nifSaving, setNifSaving]       = useState(false);
+  const [nifSaved, setNifSaved]         = useState(false);
+
+  const handleSaveNif = async (e) => {
+    e.preventDefault();
+    setNifSaving(true);
+    setNifSaved(false);
+    try {
+      await supabase.from('profiles').update({ nif: nif.trim() || null }).eq('id', profile.id);
+      setNifSaved(true);
+      setTimeout(() => { setNifSaved(false); setNifEditing(false); }, 800);
+    } catch (err) {
+      console.error('NIF save error:', err);
+    } finally {
+      setNifSaving(false);
+    }
+  };
 
   const [island, setIsland]             = useState(profile?.island || '');
   const [islandSaving, setIslandSaving]   = useState(false);
@@ -172,6 +192,73 @@ const ProfilePage = () => {
                   </button>
                 )}
               </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </div>
+
+      {/* NIF pessoal */}
+      <div className="bg-white rounded-radius border border-border shadow-sm overflow-hidden mb-5">
+        <button
+          onClick={() => setNifEditing(o => !o)}
+          className="w-full px-6 py-4 flex items-center justify-between cursor-pointer hover:bg-bg/50 transition-colors"
+        >
+          <div className="flex items-center gap-2">
+            <Hash size={15} className="text-text-muted" />
+            <span className="text-xs font-bold text-text-muted uppercase tracking-wider">NIF Pessoal</span>
+          </div>
+          <div className="flex items-center gap-2">
+            {nifSaving && <Loader2 size={13} className="animate-spin text-text-muted" />}
+            {nifSaved && (
+              <span className="flex items-center gap-1 text-[11px] font-semibold text-emerald-600">
+                <Check size={12} /> Guardado
+              </span>
+            )}
+            {nif && !nifSaving && !nifSaved && (
+              <span className="text-xs font-mono font-semibold text-primary">{nif}</span>
+            )}
+            <Pencil size={13} className="text-text-muted" />
+          </div>
+        </button>
+
+        <AnimatePresence initial={false}>
+          {nifEditing && (
+            <motion.div
+              key="nif-editor"
+              initial={{ height: 0, opacity: 0 }}
+              animate={{ height: 'auto', opacity: 1 }}
+              exit={{ height: 0, opacity: 0 }}
+              transition={{ duration: 0.22, ease: 'easeInOut' }}
+              className="overflow-hidden"
+            >
+              <form onSubmit={handleSaveNif} className="px-6 pb-5 pt-3 border-t border-border space-y-3">
+                <p className="text-xs text-text-muted">Necessário para a folha de salários e declarações fiscais à DNRE.</p>
+                <input
+                  type="text"
+                  inputMode="numeric"
+                  placeholder="Ex: 200123456"
+                  className="w-full px-4 py-2.5 border border-border rounded-xl text-sm font-mono focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
+                  value={nif}
+                  onChange={e => setNif(e.target.value)}
+                />
+                <div className="flex items-center gap-3">
+                  <button
+                    type="button"
+                    onClick={() => setNifEditing(false)}
+                    className="text-xs font-semibold text-text-muted hover:text-text transition-colors"
+                  >
+                    Cancelar
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={nifSaving}
+                    className="flex items-center gap-1.5 px-4 py-1.5 bg-primary text-white text-xs font-bold rounded-lg hover:bg-primary-light transition-all active:scale-95 disabled:opacity-50"
+                  >
+                    {nifSaving ? <Loader2 size={12} className="animate-spin" /> : <Check size={12} />}
+                    {nifSaving ? 'A guardar…' : 'Guardar'}
+                  </button>
+                </div>
+              </form>
             </motion.div>
           )}
         </AnimatePresence>

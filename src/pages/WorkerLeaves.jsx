@@ -124,6 +124,18 @@ const WorkerLeaves = () => {
     }
   };
 
+  // ── Holidays ─────────────────────────────────────────────
+  const [holidays, setHolidays] = useState([]);
+
+  useEffect(() => {
+    supabase
+      .from('holidays_cv')
+      .select('date')
+      .then(({ data }) => {
+        if (data) setHolidays(data.map(h => h.date));
+      });
+  }, []);
+
   // ── History state ────────────────────────────────────────
   const [requests, setRequests] = useState([]);
   const [loadingHistory, setLoadingHistory] = useState(false);
@@ -295,6 +307,8 @@ const WorkerLeaves = () => {
                   start={formData.startDate}
                   end={formData.endDate}
                   onChange={(s, e) => setFormData({ ...formData, startDate: s, endDate: e })}
+                  holidays={holidays}
+                  existingRequests={requests}
                 />
               </div>
             </div>
