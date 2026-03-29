@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabase';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { LogIn, Lock, Mail, Eye, EyeOff, User, Building2, ArrowLeft } from 'lucide-react';
+import { LogIn, Lock, Mail, Eye, EyeOff, User, Building2, ArrowLeft, Hash } from 'lucide-react';
 
 const Login = () => {
   const [searchParams] = useSearchParams();
@@ -17,6 +17,7 @@ const Login = () => {
   // Signup state
   const [signupName, setSignupName]         = useState('');
   const [signupCompany, setSignupCompany]   = useState('');
+  const [signupNif, setSignupNif]           = useState('');
   const [signupEmail, setSignupEmail]       = useState('');
   const [signupPassword, setSignupPassword] = useState('');
   const [signupConfirm, setSignupConfirm]   = useState('');
@@ -95,6 +96,7 @@ const Login = () => {
         const { error: rpcError } = await supabase.rpc('setup_company_admin', {
           p_company_name: signupCompany,
           p_full_name: signupName,
+          p_nif: signupNif || null,
         });
         if (rpcError) throw rpcError;
         navigate('/manager-dashboard');
@@ -309,6 +311,25 @@ const Login = () => {
                         required
                       />
                       <Building2 className="absolute left-3 top-3.5 w-4 h-4 text-text-light" />
+                    </div>
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <label className="block text-xs font-semibold text-text-muted" htmlFor="signup-nif">
+                      NIF da empresa
+                      <span className="ml-1.5 text-[10px] font-normal text-text-light normal-case tracking-normal">(opcional — necessário para faturação electrónica)</span>
+                    </label>
+                    <div className="relative">
+                      <input
+                        id="signup-nif"
+                        type="text"
+                        inputMode="numeric"
+                        placeholder="ex: 200123456"
+                        className="w-full pl-10 pr-4 py-3 bg-bg border border-border rounded-radius-sm text-sm focus:outline-none focus:border-primary-light focus:ring-4 focus:ring-primary-light/10 transition-all"
+                        value={signupNif}
+                        onChange={(e) => setSignupNif(e.target.value)}
+                      />
+                      <Hash className="absolute left-3 top-3.5 w-4 h-4 text-text-light" />
                     </div>
                   </div>
 

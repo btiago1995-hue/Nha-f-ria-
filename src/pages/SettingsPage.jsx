@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useOutletContext } from 'react-router-dom';
-import { Bell, Globe, Lock, Building2, Check, Loader2, Pencil } from 'lucide-react';
+import { Bell, Globe, Lock, Building2, Check, Loader2, Pencil, Hash } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { supabase } from '../lib/supabase';
 import { useLanguage } from '../lib/LanguageContext';
@@ -29,6 +29,7 @@ const OrganisationSection = ({ profile }) => {
   const [editing, setEditing]   = useState(false);
   const [name, setName]         = useState('');
   const [sector, setSector]     = useState('');
+  const [nif, setNif]           = useState('');
   const [saving, setSaving]     = useState(false);
   const [saved, setSaved]       = useState(false);
   const [error, setError]       = useState('');
@@ -36,6 +37,7 @@ const OrganisationSection = ({ profile }) => {
   const startEdit = () => {
     setName(company?.name || '');
     setSector(company?.sector || '');
+    setNif(company?.nif || '');
     setEditing(true);
     setSaved(false);
     setError('');
@@ -49,7 +51,7 @@ const OrganisationSection = ({ profile }) => {
     setError('');
     const { error: err } = await supabase
       .from('companies')
-      .update({ name: name.trim(), sector })
+      .update({ name: name.trim(), sector, nif: nif.trim() || null })
       .eq('id', profile.company_id);
     setSaving(false);
     if (err) { setError('Erro ao guardar.'); return; }
@@ -90,6 +92,13 @@ const OrganisationSection = ({ profile }) => {
                   <div className="text-sm text-primary font-semibold mt-0.5">
                     {currentSector ? currentSector.label : <span className="text-amber-600">Setor não configurado</span>}
                   </div>
+                  <div className="flex items-center gap-1.5 mt-1.5">
+                    <Hash size={12} className="text-text-light flex-shrink-0" />
+                    {company?.nif
+                      ? <span className="text-xs text-text-muted font-mono">{company.nif}</span>
+                      : <span className="text-xs text-amber-600 font-semibold">NIF não configurado — necessário para faturação</span>
+                    }
+                  </div>
                   {departments && (
                     <div className="flex flex-wrap gap-1.5 mt-3">
                       {departments.map(d => (
@@ -125,6 +134,24 @@ const OrganisationSection = ({ profile }) => {
                   onChange={e => setName(e.target.value)}
                   placeholder="Ex: Hotel Morabeza"
                 />
+              </div>
+
+              <div className="space-y-1.5">
+                <label className="text-xs font-bold text-text uppercase tracking-wider">
+                  NIF da Empresa
+                  <span className="ml-1.5 text-[10px] font-normal text-text-light normal-case tracking-normal">(necessário para faturação electrónica)</span>
+                </label>
+                <div className="relative">
+                  <input
+                    type="text"
+                    inputMode="numeric"
+                    className="w-full pl-9 pr-3 py-2.5 border border-border rounded-radius-sm text-sm font-mono focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
+                    value={nif}
+                    onChange={e => setNif(e.target.value)}
+                    placeholder="ex: 200123456"
+                  />
+                  <Hash size={14} className="absolute left-3 top-3 text-text-light" />
+                </div>
               </div>
 
               <div className="space-y-2">
