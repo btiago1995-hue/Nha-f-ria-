@@ -4,6 +4,8 @@ import { useCompany } from '../../lib/CompanyContext';
 import { supabase } from '../../lib/supabase';
 import { sendEmail } from '../../utils/sendEmail';
 
+const PLAN_LIMITS = { starter: 5, pro: 50, enterprise: Infinity };
+
 const InviteModal = ({ isOpen, onClose, onAdd }) => {
   const { departments, company } = useCompany() || {};
   const deptList = departments || ['Tecnologia'];
@@ -39,6 +41,22 @@ const InviteModal = ({ isOpen, onClose, onAdd }) => {
         .select('id, company_id, full_name')
         .eq('id', user.id)
         .single();
+
+      // Enforce plan collaborator limit
+      const planLimit = PLAN_LIMITS[company?.plan || 'starter'];
+      if (planLimit !== Infinity) {
+        const { count } = await supabase
+          .from('profiles')
+          .select('id', { count: 'exact', head: true })
+          .eq('company_id', inviterProfile.company_id);
+        if (count >= planLimit) {
+          const planName = company?.plan === 'pro' ? 'Pro' : 'Starter';
+          setError(`O plano ${planName} permite no máximo ${planLimit} colaboradores. Faz upgrade para continuar.`);
+          setStep('form');
+          submittingRef.current = false;
+          return;
+        }
+      }
 
       // Insert the invite record and get back the generated token
       const { data: invite, error: insertErr } = await supabase

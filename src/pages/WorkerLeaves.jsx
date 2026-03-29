@@ -90,12 +90,12 @@ const WorkerLeaves = () => {
       // Notify manager by email (best-effort)
       const { data: mgr } = await supabase
         .from('profiles')
-        .select('email, full_name')
+        .select('email, full_name, notify_on_leave_submitted')
         .in('role', ['manager', 'admin'])
         .eq('company_id', profile.company_id)
         .limit(1)
         .single();
-      if (mgr?.email) {
+      if (mgr?.email && mgr.notify_on_leave_submitted !== false) {
         sendEmail({
           type: 'leave_submitted',
           managerEmail: mgr.email,

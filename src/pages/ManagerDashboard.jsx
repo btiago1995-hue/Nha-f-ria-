@@ -133,10 +133,10 @@ const ManagerDashboard = () => {
   const notifyWorker = async (req, status) => {
     const { data: workerProfile } = await supabase
       .from('profiles')
-      .select('email, full_name')
+      .select('email, full_name, notify_on_leave_decided')
       .eq('id', req.user_id)
       .single();
-    if (workerProfile?.email) {
+    if (workerProfile?.email && workerProfile.notify_on_leave_decided !== false) {
       sendEmail({
         type: 'leave_decided',
         workerEmail: workerProfile.email,

@@ -141,8 +141,8 @@ const PLANS = [
     desc: 'Para grandes organizações',
     features: [
       'Colaboradores ilimitados',
-      'SSO / LDAP',
-      'API dedicada',
+      'SSO / LDAP (Em breve)',
+      'API dedicada (Em breve)',
       'SLA garantido',
       'Gerente de conta dedicado',
     ],
@@ -243,11 +243,24 @@ const DashboardMockup = () => (
 );
 
 // ─── Component ────────────────────────────────────────────────────────────────
+const ANNUAL_DISCOUNT = 0.10; // 10%
+
+const getPrice = (monthlyRaw, annual) => {
+  if (monthlyRaw === 'Grátis') return { display: 'Grátis', period: 'para sempre' };
+  const monthly = parseInt(monthlyRaw.replace(/\D/g, ''), 10);
+  if (annual) {
+    const yearly = Math.round(monthly * 12 * (1 - ANNUAL_DISCOUNT));
+    return { display: `${yearly.toLocaleString('pt-CV')}$`, period: '/ano' };
+  }
+  return { display: monthlyRaw, period: '/mês' };
+};
+
 const LandingPage = () => {
   const navigate = useNavigate();
   const [openFaq, setOpenFaq]   = useState(null);
   const [mobileNav, setMobileNav] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const [annual, setAnnual]     = useState(false);
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 16);
@@ -693,6 +706,23 @@ const LandingPage = () => {
             <p className="text-[10px] font-bold text-primary-light uppercase tracking-widest mb-3">Preços</p>
             <h2 className="text-3xl md:text-4xl font-bold text-text">Simples e transparente</h2>
             <p className="text-text-muted mt-3 text-sm">Sem surpresas. Cancela quando quiseres.</p>
+
+            {/* Billing toggle */}
+            <div className="inline-flex items-center gap-3 mt-6 bg-bg border border-border rounded-full px-2 py-1.5">
+              <button
+                onClick={() => setAnnual(false)}
+                className={`px-4 py-1.5 rounded-full text-sm font-bold transition-all ${!annual ? 'bg-white text-text shadow-sm' : 'text-text-muted hover:text-text'}`}
+              >
+                Mensal
+              </button>
+              <button
+                onClick={() => setAnnual(true)}
+                className={`flex items-center gap-2 px-4 py-1.5 rounded-full text-sm font-bold transition-all ${annual ? 'bg-white text-text shadow-sm' : 'text-text-muted hover:text-text'}`}
+              >
+                Anual
+                <span className="text-[10px] font-bold bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded-full">-10%</span>
+              </button>
+            </div>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-5 items-start">
@@ -718,12 +748,17 @@ const LandingPage = () => {
                 </div>
                 <div className={`text-sm mb-5 ${p.highlight ? 'text-white/60' : 'text-text-muted'}`}>{p.desc}</div>
 
-                <div className="flex items-baseline gap-1.5 mb-6">
-                  <span className={`text-4xl font-bold tracking-tight ${p.highlight ? 'text-white' : 'text-text'}`}>
-                    {p.price}
-                  </span>
-                  <span className={`text-sm ${p.highlight ? 'text-white/50' : 'text-text-muted'}`}>{p.period}</span>
-                </div>
+                {(() => {
+                  const { display, period } = getPrice(p.price, annual);
+                  return (
+                    <div className="flex items-baseline gap-1.5 mb-6">
+                      <span className={`text-4xl font-bold tracking-tight ${p.highlight ? 'text-white' : 'text-text'}`}>
+                        {display}
+                      </span>
+                      <span className={`text-sm ${p.highlight ? 'text-white/50' : 'text-text-muted'}`}>{period}</span>
+                    </div>
+                  );
+                })()}
 
                 <ul className="space-y-3 mb-8 flex-1">
                   {p.features.map(f => (
@@ -735,7 +770,13 @@ const LandingPage = () => {
                 </ul>
 
                 <button
-                  onClick={() => navigate('/login?signup=true')}
+                  onClick={() => {
+                    if (p.name === 'Enterprise') {
+                      window.location.href = 'mailto:vendas@nhaferia.cv?subject=Plano%20Enterprise%20%E2%80%94%20Nha%20F%C3%A9ria';
+                    } else {
+                      navigate('/login?signup=true');
+                    }
+                  }}
                   className={`w-full py-3 rounded-lg text-sm font-bold transition-all cursor-pointer active:scale-95 ${
                     p.highlight
                       ? 'bg-accent text-primary hover:bg-accent-hover shadow-md'
