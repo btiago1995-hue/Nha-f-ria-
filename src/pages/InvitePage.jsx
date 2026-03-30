@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
-import { CheckCircle2, AlertCircle, Eye, EyeOff, Hash } from 'lucide-react';
+import { CheckCircle2, AlertCircle, Eye, EyeOff, Hash, CreditCard, CalendarDays, Briefcase } from 'lucide-react';
 
 const InvitePage = () => {
   const { token } = useParams();
@@ -12,7 +12,7 @@ const InvitePage = () => {
   const [showPass, setShowPass]   = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [errorMsg, setErrorMsg]   = useState('');
-  const [formData, setFormData]   = useState({ email: '', password: '', confirm: '', nif: '' });
+  const [formData, setFormData]   = useState({ email: '', password: '', confirm: '', nif: '', cni: '', hire_date: '', job_title: '' });
 
   // ── Fetch invite by token ──
   useEffect(() => {
@@ -72,7 +72,10 @@ const InvitePage = () => {
           department:       invite.department,
           vacation_balance: invite.vacation_balance,
           company_id:       invite.company_id,
-          nif:              formData.nif.trim() || null,
+          nif:              formData.nif.trim()       || null,
+          cni:              formData.cni.trim()       || null,
+          hire_date:        formData.hire_date        || null,
+          job_title:        formData.job_title.trim() || null,
         }).eq('id', userId);
 
         // 3. Mark invite as used
@@ -228,6 +231,47 @@ const InvitePage = () => {
               value={formData.nif}
               onChange={(e) => setFormData({ ...formData, nif: e.target.value })}
             />
+          </div>
+
+          <div className="space-y-1.5">
+            <label className="text-xs font-bold text-text uppercase tracking-wider flex items-center gap-1.5">
+              <CreditCard size={12} /> CNI
+              <span className="font-normal text-[10px] text-text-muted normal-case tracking-normal">(Cartão Nacional de Identificação)</span>
+            </label>
+            <input
+              type="text"
+              autoComplete="off"
+              placeholder="Ex: A123456"
+              className="w-full px-4 py-3 border border-border rounded-radius-sm text-sm font-mono focus:outline-none focus:ring-2 focus:ring-primary-light/20 focus:border-primary-light transition-colors"
+              value={formData.cni}
+              onChange={(e) => setFormData({ ...formData, cni: e.target.value })}
+            />
+          </div>
+
+          <div className="grid grid-cols-2 gap-3">
+            <div className="space-y-1.5">
+              <label className="text-xs font-bold text-text uppercase tracking-wider flex items-center gap-1.5">
+                <CalendarDays size={12} /> Data de Admissão
+              </label>
+              <input
+                type="date"
+                className="w-full px-4 py-3 border border-border rounded-radius-sm text-sm focus:outline-none focus:ring-2 focus:ring-primary-light/20 focus:border-primary-light transition-colors"
+                value={formData.hire_date}
+                onChange={(e) => setFormData({ ...formData, hire_date: e.target.value })}
+              />
+            </div>
+            <div className="space-y-1.5">
+              <label className="text-xs font-bold text-text uppercase tracking-wider flex items-center gap-1.5">
+                <Briefcase size={12} /> Função
+              </label>
+              <input
+                type="text"
+                placeholder="Ex: Técnico de TI"
+                className="w-full px-4 py-3 border border-border rounded-radius-sm text-sm focus:outline-none focus:ring-2 focus:ring-primary-light/20 focus:border-primary-light transition-colors"
+                value={formData.job_title}
+                onChange={(e) => setFormData({ ...formData, job_title: e.target.value })}
+              />
+            </div>
           </div>
 
           <div className="space-y-1.5">

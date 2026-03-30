@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useOutletContext } from 'react-router-dom';
-import { User, Mail, Building2, Calendar, Sun, Smile, Pencil, MapPin, Check, Loader2, Hash } from 'lucide-react';
+import { User, Mail, Building2, Calendar, Sun, Smile, Pencil, MapPin, Check, Loader2, Hash, CreditCard, Briefcase } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useLanguage } from '../lib/LanguageContext';
 import { supabase } from '../lib/supabase';
@@ -47,6 +47,32 @@ const ProfilePage = () => {
       console.error('NIF save error:', err);
     } finally {
       setNifSaving(false);
+    }
+  };
+
+  const [dgtEditing, setDgtEditing]   = useState(false);
+  const [dgtSaving, setDgtSaving]     = useState(false);
+  const [dgtSaved, setDgtSaved]       = useState(false);
+  const [cni, setCni]                 = useState(profile?.cni || '');
+  const [hireDate, setHireDate]       = useState(profile?.hire_date || '');
+  const [jobTitle, setJobTitle]       = useState(profile?.job_title || '');
+
+  const handleSaveDgt = async (e) => {
+    e.preventDefault();
+    setDgtSaving(true);
+    setDgtSaved(false);
+    try {
+      await supabase.from('profiles').update({
+        cni:       cni.trim()      || null,
+        hire_date: hireDate        || null,
+        job_title: jobTitle.trim() || null,
+      }).eq('id', profile.id);
+      setDgtSaved(true);
+      setTimeout(() => { setDgtSaved(false); setDgtEditing(false); }, 800);
+    } catch (err) {
+      console.error('DGT fields save error:', err);
+    } finally {
+      setDgtSaving(false);
     }
   };
 
@@ -256,6 +282,107 @@ const ProfilePage = () => {
                   >
                     {nifSaving ? <Loader2 size={12} className="animate-spin" /> : <Check size={12} />}
                     {nifSaving ? 'A guardar…' : 'Guardar'}
+                  </button>
+                </div>
+              </form>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </div>
+
+      {/* Dados DGT — CNI, Admissão, Função */}
+      <div className="bg-white rounded-radius border border-border shadow-sm overflow-hidden mb-5">
+        <button
+          onClick={() => setDgtEditing(o => !o)}
+          className="w-full px-6 py-4 flex items-center justify-between cursor-pointer hover:bg-bg/50 transition-colors"
+        >
+          <div className="flex items-center gap-2">
+            <CreditCard size={15} className="text-text-muted" />
+            <span className="text-xs font-bold text-text-muted uppercase tracking-wider">Dados para Mapa DGT</span>
+          </div>
+          <div className="flex items-center gap-2">
+            {dgtSaving && <Loader2 size={13} className="animate-spin text-text-muted" />}
+            {dgtSaved && (
+              <span className="flex items-center gap-1 text-[11px] font-semibold text-emerald-600">
+                <Check size={12} /> Guardado
+              </span>
+            )}
+            {(cni || hireDate || jobTitle) && !dgtSaving && !dgtSaved && (
+              <span className="text-[11px] text-emerald-600 font-semibold">Preenchido</span>
+            )}
+            {!cni && !hireDate && !jobTitle && !dgtSaving && !dgtSaved && (
+              <span className="text-[11px] text-amber-600 font-semibold">Incompleto</span>
+            )}
+            <Pencil size={13} className="text-text-muted" />
+          </div>
+        </button>
+
+        <AnimatePresence initial={false}>
+          {dgtEditing && (
+            <motion.div
+              key="dgt-editor"
+              initial={{ height: 0, opacity: 0 }}
+              animate={{ height: 'auto', opacity: 1 }}
+              exit={{ height: 0, opacity: 0 }}
+              transition={{ duration: 0.22, ease: 'easeInOut' }}
+              className="overflow-hidden"
+            >
+              <form onSubmit={handleSaveDgt} className="px-6 pb-5 pt-3 border-t border-border space-y-4">
+                <p className="text-xs text-text-muted">Necessário para o Mapa Anual de Férias enviado à DGT (prazo: 30 de Abril).</p>
+
+                <div className="space-y-1.5">
+                  <label className="text-xs font-bold text-text uppercase tracking-wider flex items-center gap-1.5">
+                    <CreditCard size={12} /> CNI
+                    <span className="font-normal text-[10px] text-text-muted normal-case tracking-normal">(Cartão Nacional de Identificação)</span>
+                  </label>
+                  <input
+                    type="text"
+                    placeholder="Ex: A123456"
+                    className="w-full px-4 py-2.5 border border-border rounded-xl text-sm font-mono focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
+                    value={cni}
+                    onChange={e => setCni(e.target.value)}
+                  />
+                </div>
+
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-bold text-text uppercase tracking-wider">Data de Admissão</label>
+                    <input
+                      type="date"
+                      className="w-full px-4 py-2.5 border border-border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
+                      value={hireDate}
+                      onChange={e => setHireDate(e.target.value)}
+                    />
+                  </div>
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-bold text-text uppercase tracking-wider flex items-center gap-1">
+                      <Briefcase size={11} /> Função
+                    </label>
+                    <input
+                      type="text"
+                      placeholder="Ex: Técnico de TI"
+                      className="w-full px-4 py-2.5 border border-border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
+                      value={jobTitle}
+                      onChange={e => setJobTitle(e.target.value)}
+                    />
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-3">
+                  <button
+                    type="button"
+                    onClick={() => setDgtEditing(false)}
+                    className="text-xs font-semibold text-text-muted hover:text-text transition-colors"
+                  >
+                    Cancelar
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={dgtSaving}
+                    className="flex items-center gap-1.5 px-4 py-1.5 bg-primary text-white text-xs font-bold rounded-lg hover:bg-primary-light transition-all active:scale-95 disabled:opacity-50"
+                  >
+                    {dgtSaving ? <Loader2 size={12} className="animate-spin" /> : <Check size={12} />}
+                    {dgtSaving ? 'A guardar…' : 'Guardar'}
                   </button>
                 </div>
               </form>

@@ -35,10 +35,10 @@ const Compliance = () => {
       const [{ data: profiles }, { data: reqs }] = await Promise.all([
         supabase
           .from('profiles')
-          .select('id, full_name, department, vacation_balance, role'),
+          .select('id, full_name, department, vacation_balance, role, nif, cni, hire_date, job_title'),
         supabase
           .from('leave_requests')
-          .select('id, user_id, start_date, end_date, status, type, description, profiles!leave_requests_user_id_fkey(full_name, department)')
+          .select('id, user_id, start_date, end_date, status, type, description, profiles!leave_requests_user_id_fkey(full_name, department, nif, cni, hire_date, job_title)')
           .order('start_date', { ascending: true }),
       ]);
       setWorkers(profiles || []);
@@ -102,10 +102,17 @@ const Compliance = () => {
   };
 
   const buildRows = (data) => {
-    const header = ['Colaborador', 'Departamento', 'Início', 'Fim', 'Tipo', 'Dias Úteis', 'Estado'];
+    const header = [
+      'Colaborador', 'NIF', 'CNI', 'Função', 'Departamento',
+      'Data Admissão', 'Início Férias', 'Fim Férias', 'Tipo', 'Dias Úteis', 'Estado',
+    ];
     const rows = data.map(r => [
       r.profiles?.full_name  || '—',
+      r.profiles?.nif        || '—',
+      r.profiles?.cni        || '—',
+      r.profiles?.job_title  || '—',
       r.profiles?.department || '—',
+      r.profiles?.hire_date  || '—',
       r.start_date,
       r.end_date,
       r.type || '—',
@@ -227,7 +234,9 @@ const Compliance = () => {
                   <thead>
                     <tr className="bg-bg/60">
                       <th className="text-left px-4 py-2.5 font-semibold text-text-muted">Nome</th>
-                      <th className="text-left px-4 py-2.5 font-semibold text-text-muted hidden sm:table-cell">Departamento</th>
+                      <th className="text-left px-4 py-2.5 font-semibold text-text-muted hidden md:table-cell">Função</th>
+                      <th className="text-left px-4 py-2.5 font-semibold text-text-muted hidden sm:table-cell">NIF</th>
+                      <th className="text-left px-4 py-2.5 font-semibold text-text-muted hidden lg:table-cell">CNI</th>
                       <th className="text-center px-4 py-2.5 font-semibold text-text-muted">Saldo</th>
                       <th className="text-center px-4 py-2.5 font-semibold text-text-muted">Gozados</th>
                       <th className="text-center px-4 py-2.5 font-semibold text-text-muted">Estado</th>
@@ -240,8 +249,17 @@ const Compliance = () => {
                       const atRisk = w.vacation_balance > 25;
                       return (
                         <tr key={w.id} className="border-t border-border/40 hover:bg-bg/40 transition-colors">
-                          <td className="px-4 py-3 font-medium text-text">{w.full_name}</td>
-                          <td className="px-4 py-3 text-text-muted hidden sm:table-cell">{w.department || '—'}</td>
+                          <td className="px-4 py-3 font-medium text-text">
+                            <div>{w.full_name}</div>
+                            {w.hire_date && <div className="text-[10px] text-text-muted">Admissão: {w.hire_date}</div>}
+                          </td>
+                          <td className="px-4 py-3 text-text-muted hidden md:table-cell">{w.job_title || '—'}</td>
+                          <td className="px-4 py-3 text-text-muted font-mono text-xs hidden sm:table-cell">
+                            {w.nif || <span className="text-amber-500 text-[10px] font-sans">Em falta</span>}
+                          </td>
+                          <td className="px-4 py-3 text-text-muted font-mono text-xs hidden lg:table-cell">
+                            {w.cni || <span className="text-amber-500 text-[10px] font-sans">Em falta</span>}
+                          </td>
                           <td className="px-4 py-3 text-center">
                             <span className={`font-bold text-sm ${atRisk ? 'text-red-600' : 'text-text'}`}>
                               {w.vacation_balance}
