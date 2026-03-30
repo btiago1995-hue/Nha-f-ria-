@@ -326,7 +326,17 @@ async function buildZip(content: string, filename: string): Promise<Uint8Array> 
 // ── Main Handler ──────────────────────────────────────────────────────────────
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
-    return new Response(null, { headers: corsHeaders() });
+    return new Response(null, { headers: corsHeaders(req) });
+  }
+
+  // Verify webhook secret — this function is only called internally by payments-callback
+  const webhookSecret = Deno.env.get('WEBHOOK_SECRET') ?? '';
+  const authHeader = req.headers.get('Authorization') ?? '';
+  if (!webhookSecret || authHeader !== `Bearer ${webhookSecret}`) {
+    return new Response(JSON.stringify({ error: 'Unauthorized' }), {
+      status: 401,
+      headers: { ...corsHeaders(req), 'Content-Type': 'application/json' },
+    });
   }
 
   const serviceClient = createClient(
@@ -355,7 +365,7 @@ serve(async (req) => {
       .single();
     if (existing) {
       return new Response(JSON.stringify({ iud: existing.iud, alreadyIssued: true }), {
-        headers: { ...corsHeaders(), 'Content-Type': 'application/json' },
+        headers: { ...corsHeaders(req), 'Content-Type': 'application/json' },
       });
     }
 
@@ -417,7 +427,7 @@ serve(async (req) => {
     });
 
     return new Response(JSON.stringify({ iud, success, response }), {
-      headers: { ...corsHeaders(), 'Content-Type': 'application/json' },
+      headers: { ...corsHeaders(req), 'Content-Type': 'application/json' },
     });
   } catch (err) {
     console.error('efatura-emit error:', err);
@@ -443,16 +453,25 @@ function pemToArrayBuffer(pem: string): ArrayBuffer {
   return bytes.buffer;
 }
 
-function corsHeaders() {
+const ALLOWED_ORIGINS = [
+  'https://nhaferia.cv',
+  'https://www.nhaferia.cv',
+  'http://localhost:5173',
+];
+
+function corsHeaders(req: Request): Record<string, string> {
+  const origin = req.headers.get('Origin') ?? '';
+  const allowed = ALLOWED_ORIGINS.includes(origin) ? origin : ALLOWED_ORIGINS[0];
   return {
-    'Access-Control-Allow-Origin': '*',
+    'Access-Control-Allow-Origin': allowed,
     'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+    'Access-Control-Allow-Methods': 'POST, OPTIONS',
   };
 }
 
 function jsonError(message: string, status: number) {
   return new Response(JSON.stringify({ error: message }), {
     status,
-    headers: { ...corsHeaders(), 'Content-Type': 'application/json' },
+    headers: { ...corsHeaders(req), 'Content-Type': 'application/json' },
   });
 }
