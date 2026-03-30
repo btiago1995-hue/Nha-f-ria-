@@ -28,6 +28,11 @@ const InvitePage = () => {
       if (new Date(data.expires_at) < new Date()) { setStatus('expired'); return; }
 
       setInvite(data);
+      setFormData(prev => ({
+        ...prev,
+        nif: data.nif || '',
+        cni: data.cni || '',
+      }));
       setStatus('ready');
     };
     load();

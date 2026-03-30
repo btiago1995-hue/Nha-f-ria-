@@ -1,5 +1,5 @@
 import React, { useState, useRef } from 'react';
-import { X, CheckCircle2, MessageSquare, Mail, Copy, Check } from 'lucide-react';
+import { X, CheckCircle2, MessageSquare, Mail, Copy, Check, Hash, CreditCard } from 'lucide-react';
 import { useCompany } from '../../lib/CompanyContext';
 import { supabase } from '../../lib/supabase';
 import { sendEmail } from '../../utils/sendEmail';
@@ -22,6 +22,8 @@ const InviteModal = ({ isOpen, onClose, onAdd }) => {
     department: '',
     balance: 22,
     tenureMonths: 0,
+    nif: '',
+    cni: '',
   });
 
   if (!isOpen) return null;
@@ -69,6 +71,8 @@ const InviteModal = ({ isOpen, onClose, onAdd }) => {
           department:       formData.department || null,
           vacation_balance: formData.balance,
           tenure_months:    formData.tenureMonths,
+          nif:              formData.nif.trim() || null,
+          cni:              formData.cni.trim() || null,
         })
         .select('token')
         .single();
@@ -132,7 +136,7 @@ const InviteModal = ({ isOpen, onClose, onAdd }) => {
     setInviteUrl('');
     setCopied(false);
     setError('');
-    setFormData({ name: '', email: '', role: '', department: '', balance: 22, tenureMonths: 0 });
+    setFormData({ name: '', email: '', role: '', department: '', balance: 22, tenureMonths: 0, nif: '', cni: '' });
     onClose();
   };
 
@@ -204,6 +208,36 @@ const InviteModal = ({ isOpen, onClose, onAdd }) => {
                     className="w-full px-3 py-2 border border-border rounded-radius-sm text-sm focus:outline-none focus:ring-2 focus:ring-primary-light/20 focus:border-primary-light"
                     value={formData.role}
                     onChange={(e) => setFormData({ ...formData, role: e.target.value })}
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-1.5">
+                  <label className="text-xs font-bold text-text uppercase tracking-wider flex items-center gap-1.5">
+                    <Hash size={11} /> NIF
+                    <span className="font-normal text-[10px] text-text-muted normal-case tracking-normal">(opcional)</span>
+                  </label>
+                  <input
+                    type="text"
+                    inputMode="numeric"
+                    placeholder="Ex: 200123456"
+                    className="w-full px-3 py-2 border border-border rounded-radius-sm text-sm font-mono focus:outline-none focus:ring-2 focus:ring-primary-light/20 focus:border-primary-light"
+                    value={formData.nif}
+                    onChange={(e) => setFormData({ ...formData, nif: e.target.value })}
+                  />
+                </div>
+                <div className="space-y-1.5">
+                  <label className="text-xs font-bold text-text uppercase tracking-wider flex items-center gap-1.5">
+                    <CreditCard size={11} /> CNI
+                    <span className="font-normal text-[10px] text-text-muted normal-case tracking-normal">(opcional)</span>
+                  </label>
+                  <input
+                    type="text"
+                    placeholder="Ex: A123456"
+                    className="w-full px-3 py-2 border border-border rounded-radius-sm text-sm font-mono focus:outline-none focus:ring-2 focus:ring-primary-light/20 focus:border-primary-light"
+                    value={formData.cni}
+                    onChange={(e) => setFormData({ ...formData, cni: e.target.value })}
                   />
                 </div>
               </div>
