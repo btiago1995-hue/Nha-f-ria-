@@ -27,14 +27,15 @@ const Login = () => {
 
   const [loading, setLoading]   = useState(false);
   const [error, setError]       = useState(null);
+  const [info, setInfo]         = useState(null);
   const navigate = useNavigate();
 
   // Clear errors when switching mode
-  useEffect(() => { setError(null); setResetSent(false); }, [mode]);
+  useEffect(() => { setError(null); setInfo(null); setResetSent(false); }, [mode]);
 
   // ── Forgot password ─────────────────────────────────────────────────────────
   const handleForgotPassword = async () => {
-    if (!email) { setError('Introduz o teu email para recuperar a palavra-passe.'); return; }
+    if (!email) { setInfo('Introduz o teu email acima para recuperar a palavra-passe.'); return; }
     try {
       const { error: resetError } = await supabase.auth.resetPasswordForEmail(email, {
         redirectTo: `${window.location.origin}/reset-password`,
@@ -175,6 +176,11 @@ const Login = () => {
             {error && (
               <div className="mb-5 p-3.5 bg-red-50 border border-red-200 text-danger text-sm font-semibold rounded-radius-sm text-center">
                 {error}
+              </div>
+            )}
+            {info && (
+              <div className="mb-5 p-3.5 bg-blue-50 border border-blue-200 text-blue-700 text-sm font-semibold rounded-radius-sm text-center">
+                {info}
               </div>
             )}
             {resetSent && (
