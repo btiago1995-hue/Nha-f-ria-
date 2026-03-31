@@ -1,4 +1,5 @@
 import React from 'react';
+import * as Sentry from '@sentry/react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import Login from './pages/Login';
 import LandingPage from './pages/LandingPage';
@@ -21,6 +22,7 @@ import ResetPasswordPage from './pages/ResetPasswordPage';
 
 function App() {
   return (
+    <Sentry.ErrorBoundary fallback={<p style={{ padding: '2rem' }}>Something went wrong. Please refresh the page.</p>}>
     <Router>
       <Routes>
         {/* Public Routes */}
@@ -53,6 +55,7 @@ function App() {
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </Router>
+    </Sentry.ErrorBoundary>
   );
 }
 
