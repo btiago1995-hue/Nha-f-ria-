@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import {
   CalendarDays, Users, Bell, CheckCircle2, ArrowRight,
   FileText, Shield, Zap, ChevronDown, Menu, X,
@@ -888,13 +888,19 @@ const LandingPage = () => {
                 { label: 'Como Funciona',   href: '#como-funciona'   },
                 { label: 'Preços',          href: '#precos'           },
                 { label: 'FAQ',             href: '#faq'              },
-                { label: 'Privacidade',     href: '/privacy'          },
-                { label: 'Termos',          href: '/terms'            },
-                { label: 'Contacto',        href: '/contacto'         },
               ].map(l => (
                 <a key={l.label} href={l.href} className="hover:text-white/70 transition-colors py-0.5">
                   {l.label}
                 </a>
+              ))}
+              {[
+                { label: 'Privacidade', to: '/privacy'   },
+                { label: 'Termos',      to: '/terms'     },
+                { label: 'Contacto',    to: '/contacto'  },
+              ].map(l => (
+                <Link key={l.label} to={l.to} className="hover:text-white/70 transition-colors py-0.5">
+                  {l.label}
+                </Link>
               ))}
             </div>
 
