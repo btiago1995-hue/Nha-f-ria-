@@ -8,7 +8,7 @@ import { supabase } from '../lib/supabase';
 import { format, parseISO, eachDayOfInterval } from 'date-fns';
 import { pt, enGB } from 'date-fns/locale';
 import { getBusinessDays } from '../utils/dateUtils';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useLanguage } from '../lib/LanguageContext';
 
 const containerVariants = {
@@ -178,6 +178,34 @@ const WorkerDashboard = () => {
           {format(new Date(), "EEEE, d 'de' MMMM yyyy", { locale: dateLocale })}
         </div>
       </motion.div>
+
+      {/* Onboarding banner — shown to new workers with no requests yet */}
+      <AnimatePresence>
+        {!loading && requests.length === 0 && (
+          <motion.div
+            initial={{ opacity: 0, y: -8 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -8 }}
+            className="bg-gradient-to-r from-primary to-primary-light rounded-radius p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 shadow-lg"
+          >
+            <div className="flex items-start gap-4">
+              <div className="w-10 h-10 bg-white/15 rounded-xl flex items-center justify-center flex-shrink-0 text-xl">
+                🌴
+              </div>
+              <div>
+                <p className="text-sm font-bold text-white">Bem-vindo{firstName ? `, ${firstName}` : ''}!</p>
+                <p className="text-sm text-white/70 mt-0.5">A tua conta está pronta. Faz o teu primeiro pedido de férias agora.</p>
+              </div>
+            </div>
+            <button
+              onClick={() => navigate('/worker-leaves')}
+              className="flex items-center gap-2 px-5 py-2.5 bg-accent text-primary text-sm font-bold rounded-radius-sm hover:bg-accent-hover transition-all shadow-md whitespace-nowrap flex-shrink-0 cursor-pointer"
+            >
+              Pedir férias <Plane className="w-4 h-4" />
+            </button>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Stats row */}
       <motion.div variants={itemVariants} className="grid grid-cols-1 md:grid-cols-3 gap-4">

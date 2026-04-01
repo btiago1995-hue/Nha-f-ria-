@@ -232,18 +232,18 @@ const WorkerLeaves = () => {
       </div>
 
       {/* Tabs */}
-      <div className="flex gap-1 bg-bg border border-border rounded-radius-sm p-1 mb-6 w-fit">
+      <div className="flex gap-1 bg-bg border border-border rounded-radius-sm p-1 mb-6 w-fit max-w-full">
         <button
           onClick={() => setActiveTab('form')}
-          className={`flex items-center gap-2 px-4 py-2 rounded-[6px] text-sm font-semibold transition-all cursor-pointer
+          className={`flex items-center gap-2 px-3 sm:px-4 py-2 rounded-[6px] text-xs sm:text-sm font-semibold transition-all cursor-pointer whitespace-nowrap
             ${activeTab === 'form' ? 'bg-white text-text shadow-sm' : 'text-text-muted hover:text-text'}`}
         >
-          <Plus size={15} />
+          <Plus size={14} />
           {w('newRequest')}
         </button>
         <button
           onClick={() => setActiveTab('history')}
-          className={`flex items-center gap-2 px-4 py-2 rounded-[6px] text-sm font-semibold transition-all cursor-pointer
+          className={`flex items-center gap-2 px-3 sm:px-4 py-2 rounded-[6px] text-xs sm:text-sm font-semibold transition-all cursor-pointer whitespace-nowrap
             ${activeTab === 'history' ? 'bg-white text-text shadow-sm' : 'text-text-muted hover:text-text'}`}
         >
           <History size={15} />

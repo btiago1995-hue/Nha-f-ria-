@@ -46,7 +46,8 @@ const GanttChart = ({ data = [], viewMode = 'annual' }) => {
     monthIndices = Array.from({ length: 12 }, (_, i) => i);
   }
 
-  const gridTemplate = `140px repeat(${monthIndices.length}, 1fr)`;
+  const nameColWidth = typeof window !== 'undefined' && window.innerWidth < 480 ? '80px' : '140px';
+  const gridTemplate = `${nameColWidth} repeat(${monthIndices.length}, 1fr)`;
 
   return (
     <div className="w-full overflow-x-auto">
@@ -91,7 +92,7 @@ const GanttChart = ({ data = [], viewMode = 'annual' }) => {
                     >
                       {worker.avatar || 'U'}
                     </div>
-                    <span className="text-[12px] font-semibold text-text truncate">{worker.name}</span>
+                    <span className="text-[10px] sm:text-[12px] font-semibold text-text truncate">{worker.name}</span>
                   </div>
 
                   {monthIndices.map((m) => {

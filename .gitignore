@@ -8,3 +8,4 @@ dist
 tmp-vite/
 prototype-ui/
 skills-lock.json
+.vercel

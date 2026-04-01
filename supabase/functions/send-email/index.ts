@@ -74,6 +74,12 @@ serve(async (req) => {
       subject = `${inviterName} convidou-te para a Nha Féria`;
       html = emailInvite({ toName, inviterName, companyName, inviteUrl });
 
+    } else if (type === 'welcome') {
+      const { workerEmail, workerName, companyName, dashboardUrl } = payload;
+      to = workerEmail;
+      subject = `Bem-vindo à ${companyName} no Nha Féria 🌴`;
+      html = emailWelcome({ workerName, companyName, dashboardUrl });
+
     } else {
       return new Response(JSON.stringify({ error: 'Unknown email type' }), {
         status: 400,
@@ -184,6 +190,25 @@ function emailLeaveDecided({ workerName, status, leaveType, startDate, endDate, 
       <p style="margin:6px 0 0;font-size:13px;color:#64748B;">${startDate} → ${endDate}</p>
     </div>
     ${btn(dashboardUrl, 'Ver as minhas férias →')}
+  `);
+}
+
+function emailWelcome({ workerName, companyName, dashboardUrl }: Record<string, string>): string {
+  return base(`
+    <h2 style="margin:0 0 8px;font-size:20px;color:#1A3A5C;">Bem-vindo à Nha Féria! 🌴</h2>
+    <p style="margin:0 0 20px;color:#64748B;font-size:14px;">Olá <strong>${workerName.split(' ')[0]}</strong>,</p>
+    <p style="margin:0 0 16px;color:#475569;font-size:14px;line-height:1.6;">
+      A tua conta em <strong>${companyName}</strong> está pronta. A partir de agora podes gerir as tuas férias e licenças diretamente na plataforma.
+    </p>
+    <div style="border-radius:10px;background:#F0F9FF;border:1px solid #BAE6FD;padding:16px 20px;margin-bottom:20px;">
+      <p style="margin:0 0 8px;font-size:13px;font-weight:700;color:#0369A1;">O que podes fazer:</p>
+      <ul style="margin:0;padding-left:16px;font-size:13px;color:#475569;line-height:1.8;">
+        <li>Pedir férias e licenças online</li>
+        <li>Consultar o teu saldo de dias disponíveis</li>
+        <li>Acompanhar o estado dos pedidos em tempo real</li>
+      </ul>
+    </div>
+    ${btn(dashboardUrl, 'Ir para o dashboard →')}
   `);
 }
 

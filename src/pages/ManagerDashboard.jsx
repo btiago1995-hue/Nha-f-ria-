@@ -226,6 +226,30 @@ const ManagerDashboard = () => {
     u.requests.some(r => today >= r.startDate && today <= r.endDate)
   );
 
+  // Breakdown by leave type
+  const typeBreakdown = approvedReqs.reduce((acc, r) => {
+    const type = r.type || 'outro';
+    acc[type] = (acc[type] || 0) + 1;
+    return acc;
+  }, {});
+  const typeEntries = Object.entries(typeBreakdown).sort((a, b) => b[1] - a[1]);
+  const typeMax = typeEntries[0]?.[1] || 1;
+
+  // Monthly trend (last 6 months of approved requests)
+  const monthCounts = {};
+  const now = new Date();
+  for (let i = 5; i >= 0; i--) {
+    const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+    const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+    monthCounts[key] = 0;
+  }
+  approvedReqs.forEach(r => {
+    const key = r.start_date?.slice(0, 7);
+    if (key && key in monthCounts) monthCounts[key]++;
+  });
+  const monthEntries = Object.entries(monthCounts);
+  const monthMax = Math.max(...Object.values(monthCounts), 1);
+
   // Onboarding banner: shown when admin/manager has no team yet (just signed up)
   const showOnboarding = !loading && stats.teamSize === 0;
 
@@ -512,6 +536,62 @@ const ManagerDashboard = () => {
           />
         </div>
       </motion.div>
+
+      {/* Analytics */}
+      {!loading && approvedReqs.length > 0 && (
+        <motion.div variants={itemVariants} className="space-y-4">
+          <div className="text-xs font-bold text-text-muted uppercase tracking-widest flex items-center gap-2">
+            <BarChart2 size={13} />
+            Análise de Ausências
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {/* Leave type breakdown */}
+            <div className="bg-white border border-border rounded-radius p-5 hover:shadow-md transition-shadow duration-200">
+              <div className="text-xs font-bold text-text-muted uppercase tracking-widest mb-4">Por Tipo</div>
+              <div className="space-y-2.5">
+                {typeEntries.map(([type, count]) => (
+                  <div key={type}>
+                    <div className="flex justify-between items-center mb-1">
+                      <span className="text-xs font-semibold text-text capitalize">{type}</span>
+                      <span className="text-xs font-bold text-primary tabular-nums">{count}</span>
+                    </div>
+                    <div className="w-full bg-bg rounded-full h-1.5">
+                      <div
+                        className="bg-primary rounded-full h-1.5 transition-all duration-500"
+                        style={{ width: `${(count / typeMax) * 100}%` }}
+                      />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Monthly trend */}
+            <div className="bg-white border border-border rounded-radius p-5 hover:shadow-md transition-shadow duration-200">
+              <div className="text-xs font-bold text-text-muted uppercase tracking-widest mb-4">Tendência Mensal</div>
+              <div className="flex items-end gap-1.5 h-24">
+                {monthEntries.map(([month, count]) => {
+                  const heightPct = (count / monthMax) * 100;
+                  const label = new Date(month + '-01').toLocaleDateString('pt', { month: 'short' });
+                  return (
+                    <div key={month} className="flex-1 flex flex-col items-center gap-1">
+                      <span className="text-[9px] font-bold text-text tabular-nums">{count > 0 ? count : ''}</span>
+                      <div className="w-full flex items-end" style={{ height: '64px' }}>
+                        <div
+                          className="w-full bg-primary/20 hover:bg-primary/40 rounded-t-sm transition-all duration-500 cursor-default"
+                          style={{ height: `${Math.max(heightPct, count > 0 ? 8 : 2)}%` }}
+                          title={`${label}: ${count} pedidos`}
+                        />
+                      </div>
+                      <span className="text-[9px] text-text-muted capitalize">{label}</span>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
+        </motion.div>
+      )}
     </motion.div>
   );
 };

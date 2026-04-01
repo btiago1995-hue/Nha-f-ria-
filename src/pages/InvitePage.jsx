@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
+import { sendEmail } from '../utils/sendEmail';
 import { CheckCircle2, AlertCircle, Eye, EyeOff, Hash, CreditCard, CalendarDays, Briefcase } from 'lucide-react';
 
 const InvitePage = () => {
@@ -95,6 +96,14 @@ const InvitePage = () => {
           .from('company_invites')
           .update({ used_at: new Date().toISOString() })
           .eq('token', token);
+
+        sendEmail({
+          type: 'welcome',
+          workerEmail: formData.email,
+          workerName: invite.full_name,
+          companyName: invite.companies?.name || 'a tua empresa',
+          dashboardUrl: `${window.location.origin}/worker-dashboard`,
+        });
 
         setStatus('success');
         setTimeout(() => navigate('/worker-dashboard'), 2500);
