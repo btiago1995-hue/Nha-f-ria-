@@ -443,6 +443,7 @@ const LandingPage = () => {
       {/* ── PROBLEM / SOLUTION ───────────────────────────────────────────── */}
       <section className="bg-white py-24">
         <div className="max-w-5xl mx-auto px-4 sm:px-6">
+          <h2 className="sr-only">Antes e depois da Nha Féria</h2>
           <div className="grid md:grid-cols-2 gap-8 items-start">
             {/* Before */}
             <div className="bg-red-50 border border-red-100 rounded-2xl p-8">
